@@ -1,11 +1,13 @@
 providers = ["python"]
 
-[providers.python]
-version = "3.11"
+# Option B (instead of .tool-versions): uncomment the next 3 lines to pin via env
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
 
 [phases.setup]
 nixPkgs = ["ffmpeg", "imagemagick", "fontconfig", "dejavu_fonts"]
 
+# Safety: ensure `python` exists if the builder invokes `python` instead of `python3`
 [phases.build]
 cmds = [
   "ln -sf $(command -v python3) /usr/local/bin/python || true"
