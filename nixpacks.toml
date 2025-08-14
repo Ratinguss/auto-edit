@@ -1,14 +1,20 @@
 providers = ["python"]
 
-# Option B (instead of .tool-versions): uncomment the next 3 lines to pin via env
+# Optional but recommended to pin a version. Use either this variable
+# or a .tool-versions file; either works.
 [variables]
 NIXPACKS_PYTHON_VERSION = "3.11"
 
 [phases.setup]
+# System packages for MoviePy/text rendering
 nixPkgs = ["ffmpeg", "imagemagick", "fontconfig", "dejavu_fonts"]
 
-# Safety: ensure `python` exists if the builder invokes `python` instead of `python3`
-[phases.build]
+# Override install so it doesn't call `python` (which is missing)
+[phases.install]
 cmds = [
-  "ln -sf $(command -v python3) /usr/local/bin/python || true"
+  "python3 -m venv --copies /opt/venv",
+  "/opt/venv/bin/pip install --upgrade pip",
+  "/opt/venv/bin/pip install -r requirements.txt"
 ]
+
+# You can remove the previous build-phase symlink; it’s no longer needed.
