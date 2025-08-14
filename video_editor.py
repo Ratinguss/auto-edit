@@ -163,7 +163,28 @@ def transcribe_audio(path: str) -> List[Dict]:
 # ---------------- Captions ----------------
 TARGET_SIZE = (720, 1280)
 BLUR_RADIUS = 15
-CAPTION_FONT_SIZE = 96
+CAPTION_FONT_SIZE = 42
+CAPTION_FONT_PATH = os.getenv("CAPTION_FONT_PATH", "")  # set in Railway to a TTF path
+
+def _resolve_caption_font(size_px: int):
+    # Try explicit env override first
+    candidates = []
+    if CAPTION_FONT_PATH:
+        candidates.append(CAPTION_FONT_PATH)
+    # Common DejaVu locations in Railway/Nix images
+    candidates += [
+        "/root/.nix-profile/share/fonts/truetype/DejaVuSans.ttf",
+        "/nix/var/nix/profiles/default/share/fonts/truetype/DejaVuSans.ttf",
+        os.path.join(os.path.dirname(__file__), "fonts", "Inter-Regular.ttf"),  # if you vendor a font
+    ]
+    for path in candidates:
+        try:
+            return ImageFont.truetype(path, size_px)
+        except Exception:
+            continue
+    # Last resort: tiny bitmap font (avoid if possible)
+    return ImageFont.load_default()
+
 CAPTION_MAX_GROUP_DURATION = 2.0
 CAPTION_MAX_GAP = 0.5
 # New limits to shorten each on-screen caption
@@ -273,7 +294,7 @@ def build_caption_clips(
                 tc = (TextClip(
                         chunk,
                         fontsize=font_size_px,
-                        font="Arial",
+                        font="DejaVu-Sans",  # instead of "Arial"
                         color="white",
                         method="caption",
                         size=(int(W * 0.9), None),
