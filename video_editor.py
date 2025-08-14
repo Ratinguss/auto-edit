@@ -31,6 +31,10 @@ except ImportError:
     AudioSegment = None
     detect_silence = None
 
+# Configure MoviePy for ImageMagick 7 and define font path
+os.environ.setdefault("IMAGEMAGICK_BINARY", "magick")
+CAPTION_FONT_FILE = os.getenv("CAPTION_FONT_FILE", "/root/.nix-profile/share/fonts/truetype/DejaVuSans.ttf")
+
 ProgressFn = Callable[[int, str], None]
 
 # ---------------- File discovery ----------------
@@ -163,7 +167,7 @@ def transcribe_audio(path: str) -> List[Dict]:
 # ---------------- Captions ----------------
 TARGET_SIZE = (720, 1280)
 BLUR_RADIUS = 15
-CAPTION_FONT_SIZE = 96
+CAPTION_FONT_SIZE = 110
 CAPTION_MAX_GROUP_DURATION = 2.0
 CAPTION_MAX_GAP = 0.5
 # New limits to shorten each on-screen caption
@@ -223,12 +227,15 @@ def build_caption_clips(
     grouped = _group_segments(segments)
     logging.info(f"Caption grouping: {len(segments)} -> {len(grouped)} groups")
     W, H = video_size
+    
+    # Compute effective font size - larger of 10% of height or configured font size
+    effective_font = max(int(H * 0.10), int(font_size_px))
 
     bottom_margin = int(H * CAPTION_VERTICAL_FRACTION)
     clips: List[VideoFileClip] = []
 
     try:
-        pil_font = ImageFont.truetype("arial.ttf", font_size_px)
+        pil_font = ImageFont.truetype(CAPTION_FONT_FILE, effective_font)
     except Exception:
         pil_font = ImageFont.load_default()
 
@@ -272,11 +279,13 @@ def build_caption_clips(
             try:
                 tc = (TextClip(
                         chunk,
-                        fontsize=font_size_px,
-                        font="Arial",
+                        fontsize=effective_font,
+                        font=CAPTION_FONT_FILE,
                         color="white",
+                        stroke_color="black",
+                        stroke_width=max(2, effective_font // 24),
                         method="caption",
-                        size=(int(W * 0.9), None),
+                        size=(int(W * 0.95), None),
                         align="center"
                     ).set_start(sub_start).set_duration(sub_dur)
                      .set_position(("center", H - bottom_margin)))
@@ -290,7 +299,7 @@ def build_caption_clips(
                 words = chunk.split()
                 lines = []
                 current = ""
-                max_chars = max(10, int(W * 0.9 / (font_size_px * 0.55)))
+                max_chars = max(10, int(W * 0.95 / (effective_font * 0.55)))
                 for w in words:
                     if len(current) + (1 if current else 0) + len(w) <= max_chars:
                         current = (current + " " + w).strip()
@@ -298,10 +307,10 @@ def build_caption_clips(
                         lines.append(current); current = w
                 if current: lines.append(current)
 
-                line_height = font_size_px + 4
-                pad_y = 16
+                line_height = int(effective_font * 1.1)
+                pad_y = int(effective_font * 0.4)
                 text_h = line_height * len(lines)
-                img_w = int(W * 0.9)
+                img_w = int(W * 0.95)
                 img_h = text_h + pad_y * 2
 
                 from PIL import Image as PILImage, ImageDraw as PILImageDraw
@@ -315,7 +324,7 @@ def build_caption_clips(
                         bbox = draw.textbbox((0,0), line, font=pil_font)
                         line_w = bbox[2] - bbox[0]
                     except Exception:
-                        line_w = font_size_px * 0.55 * len(line)
+                        line_w = effective_font * 0.55 * len(line)
                     x = (img_w - line_w) / 2
                     draw.text((x, y), line, font=pil_font, fill=(255,255,255,255))
 
