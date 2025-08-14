@@ -163,7 +163,7 @@ def transcribe_audio(path: str) -> List[Dict]:
 # ---------------- Captions ----------------
 TARGET_SIZE = (720, 1280)
 BLUR_RADIUS = 15
-CAPTION_FONT_SIZE = 42
+CAPTION_FONT_SIZE = 96
 CAPTION_MAX_GROUP_DURATION = 2.0
 CAPTION_MAX_GAP = 0.5
 # New limits to shorten each on-screen caption
