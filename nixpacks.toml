@@ -1,2 +1,10 @@
 [phases.setup]
 nixPkgs = ["ffmpeg", "imagemagick", "fontconfig", "dejavu_fonts"]
+
+providers = ["python"]
+
+[providers.python]
+version = "3.11"
+
+[phases.setup]
+nixPkgs = ["ffmpeg", "imagemagick", "fontconfig", "dejavu_fonts"]
