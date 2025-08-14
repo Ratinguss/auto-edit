@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Video Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .file-input-container {
+            transition: all 0.3s ease;
+        }
+        .file-input-container:hover {
+            transform: translateY(-2px);
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .dark-mode .card {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
+        .dark-mode .file-input-container {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
+        .dark-mode input[type="file"]::file-selector-button {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+        .dark-mode .btn-primary {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+        .dark-mode .btn-secondary {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+        input[type="file"]::file-selector-button {
+            border: none;
+            background: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: #1a202c;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 10px;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background: #cbd5e0;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with theme toggle -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                <i class="fas fa-film mr-2"></i> Auto Video Editor
+            </h1>
+            <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </header>
+
+        <div class="max-w-4xl mx-auto">
+            <!-- Form -->
+            <form id="video-edit-form" class="space-y-6" method="post" enctype="multipart/form-data">
+                <!-- Hook Section -->
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-fish mr-2 text-indigo-500"></i> Hook Video
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Upload your attention-grabbing hook video (MP4 or MOV)</p>
+                    <div class="file-input-container bg-gray-50 border border-gray-300 rounded-lg p-4 dark:bg-gray-700 dark:border-gray-600">
+                        <input type="file" name="hook" accept="video/mp4,video/quicktime" class="w-full" required>
+                    </div>
+                </div>
+
+                <!-- Body Section -->
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-video mr-2 text-indigo-500"></i> Body Clips
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Upload your main content videos (at least one required)</p>
+                    <div class="file-input-container bg-gray-50 border border-gray-300 rounded-lg p-4 dark:bg-gray-700 dark:border-gray-600">
+                        <input id="body-input" type="file" name="body" accept="video/mp4,video/quicktime" class="w-full" multiple required>
+                        <ul id="body-file-list" class="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-300"></ul>
+                    </div>
+                </div>
+
+                <!-- CTA Section -->
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-hand-pointer mr-2 text-indigo-500"></i> Call-to-Action Video
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Upload your closing CTA video (MP4 or MOV)</p>
+                    <div class="file-input-container bg-gray-50 border border-gray-300 rounded-lg p-4 dark:bg-gray-700 dark:border-gray-600">
+                        <input type="file" name="cta" accept="video/mp4,video/quicktime" class="w-full" required>
+                    </div>
+                </div>
+
+                <!-- Optional Sections -->
+                <div class="card bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                        <i class="fas fa-plus-circle mr-2 text-indigo-500"></i> Optional Enhancements
+                    </h2>
+
+                    <!-- B-Roll -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium mb-2 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-photo-video mr-2 text-indigo-400"></i> B-Roll Clips
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-3">Add supplementary footage (MP4 or MOV)</p>
+                        <div class="file-input-container bg-gray-50 border border-gray-300 rounded-lg p-4 dark:bg-gray-700 dark:border-gray-600">
+                            <input type="file" name="broll" accept="video/mp4,video/quicktime" class="w-full" multiple>
+                        </div>
+                    </div>
+
+                    <!-- Overlays -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium mb-2 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-image mr-2 text-indigo-400"></i> Overlay Images
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-3">Add logos, watermarks, or graphics (PNG or JPEG)</p>
+                        <div class="file-input-container bg-gray-50 border border-gray-300 rounded-lg p-4 dark:bg-gray-700 dark:border-gray-600">
+                            <input type="file" name="overlay" accept="image/png,image/jpeg" class="w-full" multiple>
+                        </div>
+                    </div>
+
+                    <!-- Music -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium mb-2 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-music mr-2 text-indigo-400"></i> Background Music
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-3">Add background audio tracks (MP3 or WAV)</p>
+                        <div class="file-input-container bg-gray-50 border border-gray-300 rounded-lg p-4 dark:bg-gray-700 dark:border-gray-600">
+                            <input type="file" name="music" accept="audio/mpeg,audio/wav" class="w-full" multiple>
+                        </div>
+                    </div>
+
+                    <!-- Options -->
+                    <div>
+                        <h3 class="text-lg font-medium mb-2 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-cog mr-2 text-indigo-400"></i> Processing Options
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="generate-captions" name="generate-captions" checked>
+                                <label for="generate-captions" class="text-gray-700 dark:text-gray-300">Generate automatic captions</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="blur-background" name="blur-background" checked>
+                                <label for="blur-background" class="text-gray-700 dark:text-gray-300">Blur video background</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="normalize-audio" name="normalize-audio" checked>
+                                <label for="normalize-audio" class="text-gray-700 dark:text-gray-300">Normalize audio levels</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row justify-between gap-4">
+                    <button type="button" id="reset-btn" class="btn-secondary flex-1 py-3 px-6 rounded-lg font-medium flex items-center justify-center">
+                        <i class="fas fa-trash-alt mr-2"></i> Reset Form
+                    </button>
+                    <button type="submit" class="btn-primary flex-1 py-3 px-6 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                        <i class="fas fa-magic mr-2"></i> Generate Edited Video
+                    </button>
+                </div>
+            </form>
+
+            <!-- Progress Section (Hidden by default) -->
+            <div id="progress-section" class="hidden mt-8 card bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:border dark:border-gray-700">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-spinner fa-spin mr-2 text-indigo-500"></i> Processing Your Video
+                </h2>
+                <p id="phase-text" class="text-gray-600 dark:text-gray-400 mb-2">Initializing...</p>
+                
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-2">
+                    <div id="progress-bar" class="progress-bar bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+                
+                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <span id="progress-text">0%</span>
+                    <span>Estimated time remaining: <span id="time-remaining">calculating...</span></span>
+                </div>
+                
+                <div id="result-section" class="hidden text-center py-8">
+                    <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">Video Processing Complete!</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Your edited video is ready.</p>
+                    <video id="video-preview" controls class="w-full max-h-[480px] rounded-lg border border-gray-300 dark:border-gray-600 mb-4"></video>
+                    <a id="download-link" href="#" download class="inline-flex items-center gap-2 py-3 px-8 rounded-lg font-medium bg-green-600 text-white hover:bg-green-700 transition-colors">
+                        <i class="fas fa-download"></i> Download Video
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---- Theme Toggle (unchanged) ----
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('theme') ||
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') html.classList.add('dark-mode');
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark-mode');
+            localStorage.setItem('theme', html.classList.contains('dark-mode') ? 'dark' : 'light');
+        });
+
+        // ---- Form / Elements ----
+        const form = document.getElementById('video-edit-form');
+        const resetBtn = document.getElementById('reset-btn');
+        const progressSection = document.getElementById('progress-section');
+        const phaseText = document.getElementById('phase-text');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const timeRemaining = document.getElementById('time-remaining');
+        const resultSection = document.getElementById('result-section');
+        const videoEl = document.getElementById('video-preview');
+        const downloadLink = document.getElementById('download-link');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        let jobId = null;
+        let pollTimer = null;
+        let startTime = 0;
+
+        // Map backend phase -> friendly label
+        const PHASE_LABELS = {
+            start: "Initializing...",
+            load_clips: "Loading clips...",
+            trim_silence: "Trimming silence...",
+            aspect: "Adapting aspect ratio...",
+            concatenate: "Concatenating clips...",
+            transcribe: "Transcribing audio...",
+            captions: "Rendering captions...",
+            media_match: "Matching overlays & b‑roll...",
+            media_insert: "Inserting media...",
+            audio: "Processing audio...",
+            finalize: "Finalizing & encoding...",
+            done: "Complete"
+        };
+
+        function friendlyPhase(p) {
+            if (!p) return "";
+            return PHASE_LABELS[p] || p.replace(/_/g, " ");
+        }
+
+        // ---- Reset ----
+        resetBtn.addEventListener('click', () => {
+            if (jobId) {
+                if (!confirm("A job is running. Reset anyway?")) return;
+            }
+            clearState();
+            form.reset();
+            // Keep defaults checked
+            document.getElementById('generate-captions').checked = true;
+            document.getElementById('blur-background').checked = true;
+            document.getElementById('normalize-audio').checked = true;
+        });
+
+        function clearState() {
+            jobId = null;
+            startTime = 0;
+            if (pollTimer) clearTimeout(pollTimer);
+            pollTimer = null;
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            phaseText.textContent = 'Idle';
+            timeRemaining.textContent = '—';
+            progressSection.classList.add('hidden');
+            resultSection.classList.add('hidden');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-60','cursor-not-allowed');
+        }
+
+        // ---- Validation ----
+        function validateRequired() {
+            const hook = form.elements['hook'].files[0];
+            const bodyCount = form.elements['body'].files.length;
+            const cta = form.elements['cta'].files[0];
+            return !!hook && bodyCount > 0 && !!cta;
+        }
+
+        // ---- Form Submit -> Start Job ----
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!validateRequired()) {
+                alert('Please upload required files: Hook, Body (≥1), CTA.');
+                return;
+            }
+            if (jobId) {
+                alert('A job is already running.');
+                return;
+            }
+
+            const fd = new FormData();
+            // Append files (each file in a multi field gets appended individually)
+            appendFiles(fd, 'hook');
+            appendFiles(fd, 'cta');
+            appendFiles(fd, 'body', true);
+            appendFiles(fd, 'broll', true);
+            appendFiles(fd, 'overlay', true);
+            appendFiles(fd, 'music', true);
+
+            // Feature toggles: send only when checked (Flask checks presence)
+            ['generate-captions','blur-background','normalize-audio'].forEach(name=>{
+                const el = document.getElementById(name);
+                if (el && el.checked) fd.append(name, 'on');
+            });
+
+            progressSection.classList.remove('hidden');
+            resultSection.classList.add('hidden');
+            phaseText.textContent = 'Uploading...';
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            timeRemaining.textContent = 'calculating...';
+            startTime = Date.now();
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-60','cursor-not-allowed');
+
+            try {
+                const resp = await fetch('/api/process', {
+                    method: 'POST',
+                    body: fd
+                });
+                if (!resp.ok) {
+                    let msg = 'Failed to start job';
+                    try {
+                        const data = await resp.json();
+                        msg = data.error || msg;
+                    } catch {}
+                    alert(msg);
+                    clearState();
+                    return;
+                }
+                const data = await resp.json();
+                jobId = data.job_id;
+                pollStatus();
+            } catch (err) {
+                console.error(err);
+                alert('Network error starting job.');
+                clearState();
+            }
+        });
+
+        function appendFiles(fd, field, multiple=false) {
+            const input = form.elements[field];
+            if (!input) return;
+            if (multiple) {
+                Array.from(input.files).forEach(f => fd.append(field, f));
+            } else if (input.files[0]) {
+                fd.append(field, input.files[0]);
+            }
+        }
+
+        // ---- Polling ----
+        async function pollStatus() {
+            if (!jobId) return;
+            try {
+                const r = await fetch(`/api/status/${jobId}`);
+                if (!r.ok) throw new Error('status ' + r.status);
+                const data = await r.json();
+
+                updateProgress(data);
+
+                if (data.status === 'completed') {
+                    finishSuccess(data.video_url);
+                    return;
+                } else if (data.status === 'failed') {
+                    finishError(data.error || 'Processing failed', data.traceback);
+                    return;
+                }
+            } catch (e) {
+                console.warn('Poll error', e);
+                // keep polling
+            }
+            pollTimer = setTimeout(pollStatus, 2000);
+        }
+
+        function updateProgress(data) {
+            const pct = data.progress || 0;
+            progressBar.style.width = pct + '%';
+            progressText.textContent = pct + '%';
+            if (data.phase) phaseText.textContent = friendlyPhase(data.phase);
+
+            // Simple ETA estimate
+            if (pct > 5) {
+                const elapsed = (Date.now() - startTime)/1000;
+                const totalEst = elapsed / (pct/100);
+                const remaining = Math.max(0, totalEst - elapsed);
+                timeRemaining.textContent = Math.round(remaining) + 's';
+            }
+        }
+
+        function finishSuccess(url) {
+            phaseText.textContent = 'Complete';
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+            timeRemaining.textContent = '0s';
+            videoEl.src = url;
+            downloadLink.href = url;
+            resultSection.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-60','cursor-not-allowed');
+            jobId = null;
+        }
+
+        function finishError(msg, tb) {
+            alert(msg);
+            console.error(tb || msg);
+            clearState();
+        }
+
+        // (Optional) Auto-clear on page unload
+        window.addEventListener('beforeunload', () => {
+            if (jobId) {
+                // just let it continue server side
+            }
+        });
+
+
+        (function(){
+  const input = document.getElementById('body-input');
+  const list  = document.getElementById('body-file-list');
+  if(!input || !list) return;
+  function fmtSize(b){
+    if(b < 1024) return b+' B';
+    if(b < 1048576) return (b/1024).toFixed(1)+' KB';
+    return (b/1048576).toFixed(1)+' MB';
+  }
+  function render(){
+    list.innerHTML='';
+    const files=[...input.files];
+    if(!files.length){
+      list.innerHTML='<li class="italic opacity-60">No files selected</li>';
+      return;
+    }
+    files.forEach((f,i)=>{
+      const li=document.createElement('li');
+      li.className='flex items-center justify-between gap-3 bg-white/60 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-600 rounded px-2 py-1';
+      const name=f.name.length>50 ? f.name.slice(0,47)+'…' : f.name;
+      li.innerHTML=`<span class="truncate max-w-[70%]">${i+1}. ${name}</span><span class="text-xs opacity-70">${fmtSize(f.size)}</span>`;
+      list.appendChild(li);
+    });
+  }
+  input.addEventListener('change', render);
+  render();
+})();
+    </script>
+</body>
+</html>
