@@ -1,20 +1,18 @@
 providers = ["python"]
 
-# Optional but recommended to pin a version. Use either this variable
-# or a .tool-versions file; either works.
 [variables]
+# Optional: pin the Python version Nixpacks/provider prefers to use.
+# You can keep this or remove it; Python will come from nixPkgs either way.
 NIXPACKS_PYTHON_VERSION = "3.11"
 
 [phases.setup]
-# System packages for MoviePy/text rendering
-nixPkgs = ["ffmpeg", "imagemagick", "fontconfig", "dejavu_fonts"]
-
-# Override install so it doesn't call `python` (which is missing)
-[phases.install]
+# Add python311 so python3 exists; keep your media packages.
+nixPkgs = ["python311", "ffmpeg", "imagemagick", "fontconfig", "dejavu_fonts"]
+# Make sure `python` is available in case something calls it
 cmds = [
-  "python3 -m venv --copies /opt/venv",
-  "/opt/venv/bin/pip install --upgrade pip",
-  "/opt/venv/bin/pip install -r requirements.txt"
+  "ln -sf $(command -v python3) /usr/local/bin/python || true"
 ]
 
-# You can remove the previous build-phase symlink; it’s no longer needed.
+# Keep your start command in Railway UI or define it here if you prefer:
+# [start]
+# cmd = "gunicorn -b 0.0.0.0:$PORT --timeout 600 app:app"
