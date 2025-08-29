@@ -5,3 +5,4 @@ pillow == 11.1.0
 openai-whisper
 pydub == 0.25.1
 gunicorn == 22.0.0
+psutil == 6.0.0

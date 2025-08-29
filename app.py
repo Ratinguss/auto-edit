@@ -148,6 +148,50 @@ def serve_output(filename):
 def index():
     return render_template('index.html')
 
+@app.route('/collaborator')
+def collaborator_dashboard():
+    """Admin/Collaborator dashboard for backend monitoring"""
+    import psutil
+    import platform
+    from datetime import datetime
+    
+    # Get system information
+    system_info = {
+        'platform': platform.system(),
+        'platform_version': platform.release(),
+        'python_version': platform.python_version(),
+        'cpu_percent': psutil.cpu_percent(interval=1),
+        'memory_percent': psutil.virtual_memory().percent,
+        'disk_percent': psutil.disk_usage('/').percent,
+        'uptime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    
+    # Get current jobs information
+    job_stats = {
+        'total_jobs': len(jobs),
+        'queued_jobs': sum(1 for job in jobs.values() if job.get('status') == 'queued'),
+        'processing_jobs': sum(1 for job in jobs.values() if job.get('status') == 'processing'),
+        'completed_jobs': sum(1 for job in jobs.values() if job.get('status') == 'completed'),
+        'failed_jobs': sum(1 for job in jobs.values() if job.get('status') == 'failed'),
+    }
+    
+    # Get recent jobs (last 10)
+    recent_jobs = []
+    for job_id, job_data in list(jobs.items())[-10:]:
+        recent_jobs.append({
+            'id': job_id[:8] + '...',  # Shortened ID for display
+            'status': job_data.get('status', 'unknown'),
+            'progress': job_data.get('progress', 0),
+            'phase': job_data.get('phase', ''),
+            'error': job_data.get('error', '')[:100] + '...' if job_data.get('error', '') else ''
+        })
+    
+    return render_template('collaborator.html', 
+                         system_info=system_info,
+                         job_stats=job_stats, 
+                         recent_jobs=recent_jobs,
+                         current_jobs=jobs)
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5000))
