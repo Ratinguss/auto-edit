@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborator Dashboard - Auto Video Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-queued { background-color: #fbbf24; }
+        .status-processing { background-color: #3b82f6; }
+        .status-completed { background-color: #10b981; }
+        .status-failed { background-color: #ef4444; }
+        .refresh-btn {
+            transition: transform 0.2s ease;
+        }
+        .refresh-btn:hover {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-video mr-3 text-indigo-500 text-2xl"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">Collaborator Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.reload()" class="refresh-btn text-gray-500 hover:text-indigo-500">
+                        <i class="fas fa-sync-alt text-lg"></i>
+                    </button>
+                    <a href="/" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-home mr-2"></i>Main App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- System Information -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-server text-2xl text-blue-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-medium text-gray-500">System</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ system_info.platform }}</p>
+                        <p class="text-xs text-gray-500">{{ system_info.platform_version }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-microchip text-2xl text-green-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-medium text-gray-500">CPU Usage</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ "%.1f"|format(system_info.cpu_percent) }}%</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ system_info.cpu_percent }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-memory text-2xl text-yellow-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-medium text-gray-500">Memory Usage</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ "%.1f"|format(system_info.memory_percent) }}%</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="bg-yellow-500 h-2 rounded-full" style="width: {{ system_info.memory_percent }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-hdd text-2xl text-purple-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-medium text-gray-500">Disk Usage</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ "%.1f"|format(system_info.disk_percent) }}%</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: {{ system_info.disk_percent }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="text-center">
+                    <i class="fas fa-tasks text-3xl text-gray-500 mb-2"></i>
+                    <h3 class="text-sm font-medium text-gray-500">Total Jobs</h3>
+                    <p class="text-2xl font-bold text-gray-900">{{ job_stats.total_jobs }}</p>
+                </div>
+            </div>
+
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="text-center">
+                    <i class="fas fa-clock text-3xl text-yellow-500 mb-2"></i>
+                    <h3 class="text-sm font-medium text-gray-500">Queued</h3>
+                    <p class="text-2xl font-bold text-yellow-600">{{ job_stats.queued_jobs }}</p>
+                </div>
+            </div>
+
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="text-center">
+                    <i class="fas fa-cog fa-spin text-3xl text-blue-500 mb-2"></i>
+                    <h3 class="text-sm font-medium text-gray-500">Processing</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ job_stats.processing_jobs }}</p>
+                </div>
+            </div>
+
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-3xl text-green-500 mb-2"></i>
+                    <h3 class="text-sm font-medium text-gray-500">Completed</h3>
+                    <p class="text-2xl font-bold text-green-600">{{ job_stats.completed_jobs }}</p>
+                </div>
+            </div>
+
+            <div class="card bg-white rounded-lg shadow p-6">
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-2"></i>
+                    <h3 class="text-sm font-medium text-gray-500">Failed</h3>
+                    <p class="text-2xl font-bold text-red-600">{{ job_stats.failed_jobs }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Jobs -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-history mr-2 text-indigo-500"></i>Recent Jobs
+                </h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phase</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Error</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for job in recent_jobs %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ job.id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span class="status-indicator status-{{ job.status }}"></span>
+                                {{ job.status.title() }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div class="flex items-center">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                        <div class="bg-indigo-500 h-2 rounded-full" style="width: {{ job.progress }}%"></div>
+                                    </div>
+                                    <span>{{ job.progress }}%</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ job.phase }}</td>
+                            <td class="px-6 py-4 text-sm text-red-600">
+                                {% if job.error %}
+                                <span title="{{ job.error }}">{{ job.error[:50] }}...</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if recent_jobs|length == 0 %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No jobs found</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Backend Information -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-info-circle mr-2 text-indigo-500"></i>Backend Information
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">Application Details</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li><strong>Python Version:</strong> {{ system_info.python_version }}</li>
+                            <li><strong>Framework:</strong> Flask</li>
+                            <li><strong>Last Update:</strong> {{ system_info.uptime }}</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">API Endpoints</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li><code class="bg-gray-100 px-2 py-1 rounded">POST /api/process</code> - Start video processing</li>
+                            <li><code class="bg-gray-100 px-2 py-1 rounded">GET /api/status/&lt;job_id&gt;</code> - Check job status</li>
+                            <li><code class="bg-gray-100 px-2 py-1 rounded">GET /api/download/&lt;filename&gt;</code> - Download result</li>
+                            <li><code class="bg-gray-100 px-2 py-1 rounded">GET /collaborator</code> - This dashboard</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-refresh script -->
+    <script>
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            window.location.reload();
+        }, 30000);
+
+        // Add timestamp to show when page was last refreshed
+        document.addEventListener('DOMContentLoaded', function() {
+            const refreshTime = new Date().toLocaleTimeString();
+            console.log('Dashboard refreshed at:', refreshTime);
+        });
+    </script>
+</body>
+</html>
